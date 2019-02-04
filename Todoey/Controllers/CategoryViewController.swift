@@ -1,5 +1,5 @@
 //
-//  CategoryViewControllerTableViewController.swift
+//  CategoryViewController.swift
 //  Todoey
 //
 //  Created by Max Zemtsov on 02/02/2019.
@@ -10,16 +10,16 @@ import UIKit
 import CoreData
 
 
-class CategoryViewControllerTableViewController: UITableViewController {
+class CategoryViewController: UITableViewController {
 
-    var categoryArray = [Category]()
+    var categories = [Category]()
         
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+//        bprint(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
         
         loadCategories()
         
@@ -28,19 +28,33 @@ class CategoryViewControllerTableViewController: UITableViewController {
     //MARK: - Tableview Datasource methods
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categoryArray.count
+        return categories.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
         
-        let category = categoryArray[indexPath.row]
+        let category = categories[indexPath.row]
         
         cell.textLabel?.text = category.name
         
         return cell
     }
+    
+    //MARK: - Tableview Delegate Methods
+    
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        performSegue(withIdentifier: "goToItems", sender: self)
+    }
+    
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let destinatonVC = segue.destination as! TodoListViewController
+        if let indexPath = tableView.indexPathForSelectedRow {
+            destinatonVC.selectedCategory = categories[indexPath.row]
+        } 
+    }
+    
     
     //MARK: - Data Manipulation Methods
     
@@ -51,13 +65,13 @@ class CategoryViewControllerTableViewController: UITableViewController {
         } catch {
             print("Error saving context, \(error)")
         }
-        self.tableView.reloadData()
+
     }
     
     func loadCategories(with request: NSFetchRequest<Category> = Category.fetchRequest()) {
         
         do {
-            categoryArray = try context.fetch(request)
+            categories = try context.fetch(request)
         } catch {
             print("Error fetching data from context, \(error)")
         }
@@ -78,7 +92,7 @@ class CategoryViewControllerTableViewController: UITableViewController {
             
             let newCategory = Category(context: self.context)
             newCategory.name = textField.text!
-            self.categoryArray.append(newCategory)
+            self.categories.append(newCategory)
             
             self.saveCategories()
         }
@@ -95,7 +109,5 @@ class CategoryViewControllerTableViewController: UITableViewController {
     }
     
     
-    
-    //MARK: - Tableview Delegate Methods
     
 }
