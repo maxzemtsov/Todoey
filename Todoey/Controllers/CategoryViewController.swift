@@ -8,9 +8,9 @@
 
 import UIKit
 import RealmSwift
+import SwipeCellKit
 
-
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController {
     
     let realm = try! Realm()
     
@@ -23,6 +23,7 @@ class CategoryViewController: UITableViewController {
         
         loadCategories()
         
+        tableView.rowHeight = 80.0
     }
     
     //MARK: - Tableview Datasource methods
@@ -33,11 +34,9 @@ class CategoryViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
-        let category = categories?[indexPath.row]
-        
-        cell.textLabel?.text = category?.name ?? "No categories added yet"
+        cell.textLabel?.text = categories?[indexPath.row].name ?? "No categories added yet"
         
         return cell
     }
@@ -59,7 +58,6 @@ class CategoryViewController: UITableViewController {
     //MARK: - Data Manipulation Methods
     
     func save(category: Category) {
-        
         do {
             try realm.write {
                 realm.add(category)
@@ -67,16 +65,29 @@ class CategoryViewController: UITableViewController {
         } catch {
             print("Error saving context, \(error)")
         }
-
     }
     
     func loadCategories() {
-        
             categories = realm.objects(Category.self)
-        
         tableView.reloadData()
     }
+
+    //MARK: - Delete Data from Swipe
     
+    override func updateModel(at IndexPath: IndexPath) {
+        
+        super.updateModel(at: IndexPath)
+        
+        if let categoryForDeletion = self.categories?[IndexPath.row] {
+                do {
+                    try self.realm.write {
+                        self.realm.delete(categoryForDeletion)
+                    }
+                } catch {
+                    print("Error while deleting category, \(error)")
+                }
+            }
+    }
     
     //MARK: - Add New Categories
 
@@ -92,9 +103,8 @@ class CategoryViewController: UITableViewController {
             let newCategory = Category()
             newCategory.name = textField.text!
             
-            self.tableView.reloadData()
-            
             self.save(category: newCategory)
+            self.tableView.reloadData()
         }
         
         alert.addTextField { (alertTextField) in
@@ -109,5 +119,3 @@ class CategoryViewController: UITableViewController {
     }
     
 }
-    
-
