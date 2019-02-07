@@ -20,8 +20,6 @@ class CategoryViewController: SwipeTableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-//        bprint(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        
         loadCategories()
         tableView.separatorStyle = .none
         tableView.rowHeight = 80.0
